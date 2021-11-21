@@ -1,14 +1,27 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const port = process.env.port || 8000;
-const mongoURI = process.env.MONGO_URI;
+const cookieParser = require("cookie-parser");
+const logger = require("morgan");
+const helmet = require("helmet");
+
+
 const dotenv = require("dotenv");
 dotenv.config();
+const mongoURI = process.env.MONGO_URI;
+const port = process.env.port || 8000;
+
 const app = express();
+
+app.use(helmet());
+app.use(logger("dev"));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+
 
 //Connect to database
 mongoose
-  .connect(process.env.MONGO_URI, {
+  .connect(mongoURI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
