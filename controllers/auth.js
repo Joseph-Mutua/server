@@ -40,9 +40,50 @@ exports.signup = async (req, res) => {
       message: `Email has been sent to ${email}. Follow the instructions to activate your account`,
     });
   } catch (err) {
-    console.log("SIGNUP EMAIL SENT ERROR", err.message);
+    console.log("SIGNUP EMAIL SENT ERROR", err);
     return res.json({
       message: err.message,
+    });
+  }
+};
+
+exports.accountActivation = async (req, res) => {
+  const { token } = req.body;
+
+  try {
+    if (token) {
+      const decodedToken = await jwt.verify(
+        token,
+        process.env.JWT_ACCOUNT_ACTIVATION
+      );
+
+      if (!decodedToken) {
+        return res.status(401).json({
+          error: "Expired link. Sign up again",
+        });
+      }
+
+      const { name, email, password } = jwt.decode(token);
+
+      const user = new User({ name, email, password });
+
+      const newUser = await user.save();
+
+      if (!newUser) {
+        console.log("SAVE USER IN ACCOUNT ACTIVATION ERROR", err);
+        return res.status(401).json({
+          error: "Error saving user in database. Try Signing up again",
+        });
+      }
+
+      return res.json({
+        message: "Signup success. Please sign in",
+      });
+    }
+  } catch (err) {
+    console.log("ACCOUNT ACTIVATION ERROR", err);
+    return res.json({
+      error: "Expired link. Sign up again",
     });
   }
 };
